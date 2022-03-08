@@ -85,17 +85,17 @@ class ModBot(discord.Client):
         else:
             print("An error has occured getting the database reference!")
 
-        response = input("Would you like to delete old reports? (yes/no) ")
-        while response != "yes" and response != "no":
-            input("Please enter yes or no.")
+        # response = input("Would you like to delete old reports? (yes/no) ")
+        # while response != "yes" and response != "no":
+        #     input("Please enter yes or no.")
         
-        if response == "yes":
-            mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
-            messages = await mod_channel.history().flatten()
-            for message in messages: 
-                if message.author == self.user: await message.delete()
-        else:
-            await self.loadOldReports()
+        # if response == "yes":
+        mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
+        messages = await mod_channel.history().flatten()
+        for message in messages: 
+            if message.author == self.user: await message.delete()
+        # else:
+        #     await self.loadOldReports()
 
         print('Press Ctrl-C to quit.')
 
