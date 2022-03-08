@@ -43,7 +43,6 @@ class ModBot(discord.Client):
         self.db = None
         self.open_entries = {}
 
-
     async def loadOldReports(self):
         mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
         messages = await mod_channel.history().flatten()
@@ -51,10 +50,8 @@ class ModBot(discord.Client):
             if message.author == self.user: 
                 db_entry = database.Entry()
                 db_entry.fill_information(message, message.id)
-                db_entry.submit_entry(self.db)
                 self.open_entries[message.id] = db_entry
                 self.open_threads[message.id] = str(message.id)
-
 
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
@@ -100,7 +97,6 @@ class ModBot(discord.Client):
             await self.loadOldReports()
 
         print('Press Ctrl-C to quit.')
-
 
     def send_thread_message(self, thread_id, message):
         requests.post(
