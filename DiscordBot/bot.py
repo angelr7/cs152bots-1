@@ -11,6 +11,7 @@ from report import Report
 from report import State
 import sqlite3 as sl  # use DB to hold reports
 import database as database
+import boto3
 
 # Set up logging to the console
 logger = logging.getLogger('discord')
@@ -20,15 +21,16 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 # There should be a file called 'token.json' inside the same folder as this file
-token_path = 'tokens.json'
-if not os.path.isfile(token_path):
-    raise Exception(f"{token_path} not found!")
-with open(token_path) as f:
-    # If you get an error here, it means your token is formatted incorrectly. Did you put it in quotes?
-    tokens = json.load(f)
-    discord_token = tokens['discord']
-    perspective_key = tokens['perspective']
-
+# token_path = 'tokens.json'
+# if not os.path.isfile(token_path):
+#     raise Exception(f"{token_path} not found!")
+# with open(token_path) as f:
+#     # If you get an error here, it means your token is formatted incorrectly. Did you put it in quotes?
+#     tokens = json.load(f)
+#     discord_token = tokens['discord']
+#     perspective_key = tokens['perspective']
+discord_token = os.environ["discord"]
+perspective_key = os.environ["perspective"]
 
 class ModBot(discord.Client):
     def __init__(self, key):
