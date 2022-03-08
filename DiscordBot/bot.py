@@ -11,7 +11,6 @@ from report import Report
 from report import State
 import sqlite3 as sl  # use DB to hold reports
 import database as database
-import boto3
 
 # Set up logging to the console
 logger = logging.getLogger('discord')
