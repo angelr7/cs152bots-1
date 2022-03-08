@@ -27,7 +27,58 @@ ADD_AUTOMATIC_REPORT = """INSERT INTO reports_table(
                               mod_msg_id, thread_id, msg_content, time
                           ) VALUES (?, ?, ?, ?, ?, ?);"""
 
-ADD_RESOLUTION = """UPDATE reports_table SET resolution = ? WHERE mod_msg_id = ?"""
+ADD_RESOLUTION = """UPDATE reports_table SET resolution = ? WHERE mod_msg_id = ?;"""
+
+ADD_CATEGORIES = """UPDATE reports_table SET category = ?, subcategory = ? WHERE mod_msg_id = ?;"""
+
+SELECT_REPORTER_HISTORY = """SELECT * FROM reports_table WHERE reporter = ?;"""
+SELECT_REPORTED_HISTORY = """SELECT * FROM reports_table WHERE reported_account = ?;"""
+
+CATEGORIES = {
+     "1️⃣": "Threat of Danger or Harm", 
+     "2️⃣": "Harassment", 
+     "3️⃣": "Spam",
+     "4️⃣": "Suspicious Behavior"
+}
+
+SUBCATEGORIES = {
+     '🔘': "Credible Threat of Violence",  
+     '🔴': "Suicidal Comments",
+     '🟠': "Sexual Harassment", 
+     '🟡': "Hate Speech", 
+     '🟢': "Bullying",
+     '🔵': "Unwanted Solicitation", 
+     '🟣': "Scam or Fraudulent Business",
+     '⚫️': "Possible Grooming", 
+     '⚪️': "Impersonation or Compromised Account", 
+     '🟤': "Attempt to Solicit Personal Information", 
+     '🔶': "Offer of Transportation"
+}
+
+def update_categories(db, emoji, mod_msg_id):
+          category, subcategory = "", ""
+          if emoji in ['🔘', '🔴']:
+               category = CATEGORIES["1️⃣"]
+               subcategory = SUBCATEGORIES[emoji]
+          elif emoji in ['🟠', '🟡', '🟢']:
+               category = CATEGORIES["2️⃣"]
+               subcategory = SUBCATEGORIES[emoji]
+          elif emoji in ['🔵', '🟣']:
+               category = CATEGORIES["3️⃣"]
+               subcategory = SUBCATEGORIES[emoji]
+          elif emoji in ['⚫️', '⚪️', '🟤', '🔶']:
+               category = CATEGORIES["4️⃣"]
+               subcategory = SUBCATEGORIES[emoji]
+
+          cursor = db.cursor()
+          cursor.execute(ADD_CATEGORIES, (category, subcategory, mod_msg_id))
+          db.commit()
+
+def update_resolution(db, action, mod_msg_id):
+     cursor = db.cursor()
+     cursor.execute(ADD_RESOLUTION, (action, mod_msg_id))
+     db.commit()
+     cursor.close()
 
 
 class Entry():
@@ -43,6 +94,65 @@ class Entry():
           self.category = None
           self.subcategory = None
           self.additional_info = None
+
+     def get_reporter_history(self, db):
+          cursor = db.cursor()
+          cursor.execute(
+               f"SELECT * FROM reports_table WHERE reporter = {self.reporter};"
+          )
+          results = cursor.fetchall()
+          cursor.close()
+
+          to_return = "REPORTER ACC\n"
+          for i in range(len(results)):
+               result = results[i]
+               if i < len(results) - 1:
+                    to_return += "\n"
+               to_return += f"REPORT #{result[0]}\n"
+               to_return += f"----Category: {result[1]}\n"
+               to_return += f"----Subcategory: {result[2]}\n"
+               to_return += f"----Reported Account: {result[4]}\n"
+               to_return += f"----Message: \"{result[-4]}\"\n"
+
+               time = result[-3].split(' ')
+               time[1] = time[1].split('.')[0]
+               time = datetime.datetime.strptime(f"{time[0]} {time[1]}", "%Y-%m-%d %H:%M:%S")
+               to_return += f'----Time: {time}\n'
+               to_return += f"----Additional Information: {result[-2]}\n"
+               to_return += f"----Resolution: {result[-1]}\n"
+
+          return to_return
+
+
+     def get_reported_history(self, db):
+          cursor = db.cursor()
+          cursor.execute(
+               f"SELECT * FROM reports_table WHERE reported_account = {self.reported_acc};"    
+          )
+          results = cursor.fetchall()
+          cursor.close()
+
+          to_return = "REPORTED ACC\n"
+          for i in range(len(results)):
+               result = results[i]
+               if i != 0:
+                    to_return += "\n"
+               to_return += f"REPORT #{result[0]}\n"
+               to_return += f"----Category: {result[1]}\n"
+               to_return += f"----Subcategory: {result[2]}\n"
+               to_return += f"----Reporter: {result[3]}\n"
+               to_return += f"----Message: \"{result[-4]}\"\n"
+
+               time = result[-3].split(' ')
+               time[1] = time[1].split('.')[0]
+               time = datetime.datetime.strptime(f"{time[0]} {time[1]}", "%Y-%m-%d %H:%M:%S")
+               to_return += f'----Time: {time}\n'
+               to_return += f"----Additional Information: {result[-2]}\n"
+               to_return += f"----Resolution: {result[-1]}\n"
+
+          if self.reporter != None: to_return += "\n" + self.get_reporter_history(db) + "\n"
+
+          return to_return
 
      def fill_information(self, message, thread_id):
           lines = [line.strip() for line in message.content.splitlines() if line][:5]
@@ -104,9 +214,3 @@ class Entry():
           
           db.commit()
           cursor.close()
-
-def update_resolution(db, action, mod_msg_id):
-     cursor = db.cursor()
-     cursor.execute(ADD_RESOLUTION, (action, mod_msg_id))
-     db.commit()
-     cursor.close()

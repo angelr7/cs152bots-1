@@ -42,11 +42,23 @@ class ModBot(discord.Client):
         self.db = None
         self.open_entries = {}
 
+
+    async def loadOldReports(self):
+        mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
+        messages = await mod_channel.history().flatten()
+        for message in messages:
+            if message.author == self.user: 
+                db_entry = database.Entry()
+                db_entry.fill_information(message, message.id)
+                db_entry.submit_entry(self.db)
+                self.open_entries[message.id] = db_entry
+                self.open_threads[message.id] = str(message.id)
+
+
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
         for guild in self.guilds:
             print(f' - {guild.name}')
-        print('Press Ctrl-C to quit.')
 
         # Parse the group number out of the bot's name
         match = re.search('[gG]roup (\d+) [bB]ot', self.user.name)
@@ -74,7 +86,10 @@ class ModBot(discord.Client):
         else:
             print("An error has occured getting the database reference!")
 
-        print("Bot is ready to go!")
+        await self.loadOldReports()
+
+        print('Press Ctrl-C to quit.')
+
 
     def send_thread_message(self, thread_id, message):
         requests.post(
@@ -458,19 +473,30 @@ class ModBot(discord.Client):
         if report.report_complete() or report.state == State.REPORT_CANCEL:
             self.reports.pop(author_id)
 
+    def should_flag(self, scores, type):
+        if scores["PROFANITY"] + scores["TOXICITY"] + scores["SEVERE_TOXICITY"] >= 2.8: return True
+        elif scores["FLIRTATION"] + scores["THREAT"] >= 0.8 and scores["THREAT"] > 0.3 : return True
+        elif scores["THREAT"] > 0.85: return True
+        elif scores["IDENTITY_ATTACK"] >= .825: return True
+        
+        if type == "large":
+            if scores["IDENTITY_ATTACK"] > .60: return True
+            if scores["SEVERE_TOXICITY"] > 0.8: return True
+
+        return False
+    
     async def handle_channel_message(self, message):
         # Only handle messages sent in the "group-#" channel
         if not message.channel.name == f'group-{self.group_num}':
             return
 
-        # # Forward the message to the mod channel
-        # mod_channel = self.mod_channels[message.guild.id]
-        # await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
-
+        # Forward the message to the mod channel
         mod_channel = self.mod_channels[message.guild.id]
         scores = self.eval_text(message)
 
-        if len([val for val in scores.values() if val > .75]) > 0:
+        if len(message.content.split()) <= 15 and self.should_flag(scores, "small"):
+            await mod_channel.send(self.code_format(json.dumps(scores, indent=2), message, "automatically"))
+        elif (self.should_flag(scores, "large")):
             await mod_channel.send(self.code_format(json.dumps(scores, indent=2), message, "automatically"))
 
     def eval_text(self, message):
