@@ -549,7 +549,7 @@ class ModBot(discord.Client):
             toReturn += f"Additional Info: {additional_info}\n\n"
 
         if involve_authorities == "yes":
-            toReturn += f"This user has indicated this is a serious matter that may potentially involve the authorities"
+            toReturn += f"This user has indicated this is a serious matter that may potentially involve the authorities\n"
 
         toReturn += text + "```"
         return toReturn
