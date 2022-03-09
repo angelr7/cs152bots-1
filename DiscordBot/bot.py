@@ -19,11 +19,8 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# discord_token = os.environ["discord"]
-# perspective_key = os.environ["perspective"]
-
-discord_token = "OTQzMTk5OTgxMTQ4NDUwODI3.Ygvlbw.O8Zvk_n8DXn4HJocuhhcsEFr9zw"
-perspective_key = "AIzaSyCvDQCuqv1BENc68MXskhLXz9POt06UShE"
+discord_token = os.environ["discord"]
+perspective_key = os.environ["perspective"]
 
 class ModBot(discord.Client):
     def __init__(self, key):
