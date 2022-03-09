@@ -383,10 +383,6 @@ class ModBot(discord.Client):
         ).content)
 
         thread_id = response["id"]
-        response = json.loads(requests.post(
-            f"https://discord.com/api/v9/channels/{thread_id}/messages",
-            json={"content": "sample information..."}, headers=header
-        ).content)
 
         response = json.loads(requests.post(
             f"https://discord.com/api/v9/channels/{thread_id}/messages",
