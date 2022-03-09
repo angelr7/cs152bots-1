@@ -19,15 +19,6 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# There should be a file called 'token.json' inside the same folder as this file
-# token_path = 'tokens.json'
-# if not os.path.isfile(token_path):
-#     raise Exception(f"{token_path} not found!")
-# with open(token_path) as f:
-#     # If you get an error here, it means your token is formatted incorrectly. Did you put it in quotes?
-#     tokens = json.load(f)
-#     discord_token = tokens['discord']
-#     perspective_key = tokens['perspective']
 discord_token = os.environ["discord"]
 perspective_key = os.environ["perspective"]
 
@@ -44,7 +35,7 @@ class ModBot(discord.Client):
         self.db = None
         self.open_entries = {}
 
-    async def loadOldReports(self):
+    async def loadOpenReports(self):
         mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
         messages = await mod_channel.history().flatten()
         for message in messages:
@@ -95,7 +86,7 @@ class ModBot(discord.Client):
         # for message in messages: 
         #     if message.author == self.user: await message.delete()
         # else:
-        await self.loadOldReports()
+        await self.loadOpenReports()
 
         print('Press Ctrl-C to quit.')
 
@@ -408,6 +399,10 @@ class ModBot(discord.Client):
         self.open_entries[message.id] = db_entry
         to_add = ['❕']
         await self.add_reactions(message, to_add)
+
+        # if a single message is alerting reports from many users, automatically take it down
+        database.check_report(self.db, db_entry.original_msg_id)
+
 
     async def on_message(self, message):
         '''
