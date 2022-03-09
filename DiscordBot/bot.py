@@ -34,6 +34,7 @@ class ModBot(discord.Client):
         self.header = {"Authorization": f"Bot {discord_token}", "Content-Type": "application/json"}
         self.db = None
         self.open_entries = {}
+        self.main_channel = None
 
     async def loadOpenReports(self):
         mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
@@ -62,6 +63,9 @@ class ModBot(discord.Client):
             for channel in guild.text_channels:
                 if channel.name == f'group-{self.group_num}-mod':
                     self.mod_channels[guild.id] = channel
+                if channel.name == f"group-{self.group_num}":
+                    self.main_channel = channel.id
+                    print("main channel found")
 
         # Open DB
         self.db = sl.connect("reports.db")
