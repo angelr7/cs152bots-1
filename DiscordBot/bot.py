@@ -90,12 +90,12 @@ class ModBot(discord.Client):
         #     input("Please enter yes or no.")
         
         # if response == "yes":
-        mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
-        messages = await mod_channel.history().flatten()
-        for message in messages: 
-            if message.author == self.user: await message.delete()
+        # mod_channel = await self.fetch_channel(list(self.mod_channels.values())[0].id)
+        # messages = await mod_channel.history().flatten()
+        # for message in messages: 
+        #     if message.author == self.user: await message.delete()
         # else:
-        #     await self.loadOldReports()
+        await self.loadOldReports()
 
         print('Press Ctrl-C to quit.')
 
