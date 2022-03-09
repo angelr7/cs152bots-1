@@ -86,8 +86,10 @@ def check_report(db, reported_msg_id):
           """SELECT COUNT(DISTINCT reporter) WHERE original_msg_id = ?;""",
           (reported_msg_id)
      )
+     result = cursor.fetchall()[0][0]
      db.commit()
      cursor.close()
+     return result < 2
 
 class Entry():
      def __init__(self):
