@@ -402,7 +402,8 @@ class ModBot(discord.Client):
 
         # if a single message is alerting reports from many users, automatically take it down
         if (database.check_report(self.db, db_entry.original_msg_id)):
-            reported_msg = await self.fetch_channel(message.channel.id).fetch_message(db_entry.original_msg_id)
+            channel = await self.fetch_channel(message.channel.id)
+            message = await channel.fetch_message(db_entry.original_msg_id)
             await reported_msg.reply("This message has been automatically removed.")
 
 
