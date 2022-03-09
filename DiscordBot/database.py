@@ -83,7 +83,7 @@ def update_resolution(db, action, mod_msg_id):
 def check_report(db, reported_msg_id):
      cursor = db.cursor()
      cursor.execute(
-          """SELECT COUNT(DISTINCT reporter) WHERE original_msg_id = ?;""",
+          """SELECT COUNT(DISTINCT reporter) FROM reports_table WHERE original_msg_id = ?;""",
           (reported_msg_id)
      )
      result = cursor.fetchall()[0][0]
