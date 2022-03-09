@@ -80,7 +80,7 @@ def update_resolution(db, action, mod_msg_id):
      db.commit()
      cursor.close()
 
-def check_report(db, reported_msg_id):
+def remove_report(db, reported_msg_id):
      cursor = db.cursor()
      cursor.execute(
           f"""SELECT COUNT(DISTINCT reporter) 
@@ -90,7 +90,7 @@ def check_report(db, reported_msg_id):
      result = cursor.fetchall()[0][0]
      db.commit()
      cursor.close()
-     return result < 2
+     return result >= 2
 
 class Entry():
      def __init__(self):
